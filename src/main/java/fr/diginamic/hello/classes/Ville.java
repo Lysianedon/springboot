@@ -4,10 +4,12 @@ public class Ville {
 
 	private String nom;
 	private int nbHabitants;
-	
-	public Ville(String nom, int nbHabitants) {
+	private int id;
+
+	public Ville(String nom, int nbHabitants, int id) {
 		this.nom = nom;
 		this.nbHabitants = nbHabitants;
+		this.id = id;
 	}
 
 	public String getNom() {
@@ -25,7 +27,9 @@ public class Ville {
 	public void setNbHabitants(int nbHabitants) {
 		this.nbHabitants = nbHabitants;
 	}
-	
-	
-	
+
+	public int getId() {
+		return id;
+	}
+
 }
