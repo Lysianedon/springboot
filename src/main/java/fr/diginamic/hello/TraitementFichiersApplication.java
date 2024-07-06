@@ -8,7 +8,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.transaction.annotation.Transactional;
 
 import fr.diginamic.hello.entities.Departement;
 import fr.diginamic.hello.entities.Region;
@@ -22,10 +21,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * Main class for processing a CSV file to load data into a database. This class
@@ -49,6 +46,8 @@ public class TraitementFichiersApplication implements CommandLineRunner {
 	private RegionService regionService;
 
 	private final String filePath = "/Users/lysianedon/Documents/DEV/recensement.csv";
+	
+	private final String dataSeparator = ";";
 
 	// Index des colonnes
 	private final int indexCodeRegion = 0;
@@ -92,8 +91,8 @@ public class TraitementFichiersApplication implements CommandLineRunner {
 		List<String> lines = loadLinesFromCsv(filePath);
 
 		// Skip header line
-		for (int i = 1; i < lines.size(); i++) {
-			String[] fields = splitLine(lines.get(i));
+		for (int i = 1; i < 3; i++) {
+			String[] fields = splitLine(lines.get(i), dataSeparator);
 			createEntitiesFromFields(fields);
 		}
 	}
@@ -192,8 +191,8 @@ public class TraitementFichiersApplication implements CommandLineRunner {
 	 * @param line The string line to split.
 	 * @return An array of string fields extracted from the line.
 	 */
-	private String[] splitLine(String line) {
-		return line.split(";");
+	private String[] splitLine(String line, String dataSeparator) {
+		return line.split(dataSeparator);
 	}
 
 	/**
