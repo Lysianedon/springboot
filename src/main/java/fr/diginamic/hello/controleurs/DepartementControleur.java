@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.diginamic.hello.classes.Departement;
-import fr.diginamic.hello.classes.Ville;
+import fr.diginamic.hello.entities.Departement;
+import fr.diginamic.hello.entities.Ville;
 import fr.diginamic.hello.services.DepartementService;
 
 @RestController
@@ -53,7 +53,7 @@ public class DepartementControleur {
 			throw new AccessException(result.getAllErrors().get(0).getDefaultMessage());
 		}
 
-		Departement newDepartement = depService.insertDepartement(body);
+		Departement newDepartement = depService.createDepartement(body);
 		return ResponseEntity.status(HttpStatus.CREATED).body(newDepartement);
 
 	}
@@ -62,7 +62,7 @@ public class DepartementControleur {
 	public ResponseEntity<?> updateDepartement(@RequestBody Departement body, @PathVariable int id) {
 
 		try {
-			Departement updatedDepartement = depService.modifierDepartement(id, body);
+			Departement updatedDepartement = depService.updateDepartement(id, body);
 			return ResponseEntity.ok(updatedDepartement);
 		} catch (EntityNotFoundException e) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Departement non trouvé");
@@ -73,7 +73,7 @@ public class DepartementControleur {
 	public ResponseEntity<?> deleteDepartement(@PathVariable int id) {
 
 		try {
-			depService.supprimerDepartement(id);
+			depService.deleteDepartement(id);
 			return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 		} catch (EntityNotFoundException e) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Departement non trouvé");
