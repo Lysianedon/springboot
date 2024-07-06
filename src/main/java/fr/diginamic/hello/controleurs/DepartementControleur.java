@@ -1,6 +1,5 @@
 package fr.diginamic.hello.controleurs;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -20,9 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.diginamic.hello.entities.Departement;
-import fr.diginamic.hello.entities.Ville;
 import fr.diginamic.hello.services.DepartementService;
 
+/**
+ * REST controller for managing departments. This controller handles the HTTP
+ * requests for creating, retrieving, updating, and deleting departments.
+ */
 @RestController
 @RequestMapping("/departements")
 public class DepartementControleur {
@@ -30,12 +32,24 @@ public class DepartementControleur {
 	@Autowired
 	DepartementService depService;
 
+	/**
+	 * Retrieves all departments.
+	 *
+	 * @return A ResponseEntity containing a list of all departments.
+	 */
 	@GetMapping
 	public ResponseEntity<?> getDepartements() {
 		List<Departement> departements = depService.extractDepartements();
 		return ResponseEntity.ok(departements);
 	}
 
+	/**
+	 * Retrieves a single department by its ID.
+	 *
+	 * @param id The ID of the department to retrieve.
+	 * @return A ResponseEntity containing the requested department if found, or a
+	 *         NOT_FOUND status if not found.
+	 */
 	@GetMapping(path = "/{id}")
 	public ResponseEntity<?> getDepartement(@PathVariable int id) {
 		try {
@@ -46,8 +60,17 @@ public class DepartementControleur {
 		}
 	}
 
+	/**
+	 * Creates a new department.
+	 *
+	 * @param body   The department details from the request body.
+	 * @param result BindingResult that captures validation errors.
+	 * @return A ResponseEntity with the created department and HTTP status CREATED,
+	 *         or throws an AccessException if validation fails.
+	 * @throws AccessException if validation errors occur.
+	 */
 	@PostMapping
-	public ResponseEntity<?> addDepartement(@RequestBody Departement body, BindingResult result)
+	public ResponseEntity<?> createDepartement(@RequestBody Departement body, BindingResult result)
 			throws AccessException {
 		if (result.hasErrors()) {
 			throw new AccessException(result.getAllErrors().get(0).getDefaultMessage());
@@ -58,6 +81,14 @@ public class DepartementControleur {
 
 	}
 
+	/**
+	 * Updates an existing department by its ID.
+	 *
+	 * @param body The updated department details from the request body.
+	 * @param id   The ID of the department to update.
+	 * @return A ResponseEntity with the updated department if found, or a NOT_FOUND
+	 *         status if not found.
+	 */
 	@PutMapping(path = "/{id}")
 	public ResponseEntity<?> updateDepartement(@RequestBody Departement body, @PathVariable int id) {
 
@@ -69,6 +100,13 @@ public class DepartementControleur {
 		}
 	}
 
+	/**
+	 * Deletes a department by its ID.
+	 *
+	 * @param id The ID of the department to delete.
+	 * @return A ResponseEntity with HTTP status NO_CONTENT if deleted successfully,
+	 *         or NOT_FOUND if the department is not found.
+	 */
 	@DeleteMapping(path = "/{id}")
 	public ResponseEntity<?> deleteDepartement(@PathVariable int id) {
 

@@ -14,6 +14,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * REST controller for managing regions. This controller handles the HTTP
+ * requests for creating, retrieving, updating, and deleting regions.
+ */
 @RestController
 @RequestMapping("/regions")
 public class RegionControleur {
@@ -21,6 +25,47 @@ public class RegionControleur {
 	@Autowired
 	private RegionService regionService;
 
+	/**
+	 * Retrieves all regions.
+	 *
+	 * @return A ResponseEntity containing a list of all regions or NO_CONTENT if
+	 *         there are no regions.
+	 */
+	@GetMapping
+	public ResponseEntity<List<Region>> getAllRegions() {
+		List<Region> regions = regionService.getAllRegions();
+		if (regions.isEmpty()) {
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		}
+		return new ResponseEntity<>(regions, HttpStatus.OK);
+	}
+
+	/**
+	 * Retrieves a single region by its ID.
+	 *
+	 * @param id The ID of the region to retrieve.
+	 * @return A ResponseEntity containing the requested region if found, or
+	 *         NOT_FOUND if no such region exists.
+	 */
+	@GetMapping("/{id}")
+	public ResponseEntity<Region> getRegionById(@PathVariable("id") long id) {
+		Optional<Region> regionData = regionService.getRegionById(id);
+
+		if (regionData.isPresent()) {
+			return new ResponseEntity<>(regionData.get(), HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	/**
+	 * Creates a new region.
+	 *
+	 * @param region The region details from the request body.
+	 * @param result BindingResult that captures validation errors.
+	 * @return A ResponseEntity with the created region and HTTP status CREATED if
+	 *         successful, or CONFLICT if there's an IllegalArgumentException.
+	 */
 	@PostMapping
 	public ResponseEntity<?> createRegion(@Validated @RequestBody Region region, BindingResult result) {
 		if (result.hasErrors()) {
@@ -35,26 +80,15 @@ public class RegionControleur {
 		}
 	}
 
-	@GetMapping
-	public ResponseEntity<List<Region>> getAllRegions() {
-		List<Region> regions = regionService.getAllRegions();
-		if (regions.isEmpty()) {
-			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-		}
-		return new ResponseEntity<>(regions, HttpStatus.OK);
-	}
-
-	@GetMapping("/{id}")
-	public ResponseEntity<Region> getRegionById(@PathVariable("id") long id) {
-		Optional<Region> regionData = regionService.getRegionById(id);
-
-		if (regionData.isPresent()) {
-			return new ResponseEntity<>(regionData.get(), HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-	}
-
+	/**
+	 * Updates an existing region by its ID.
+	 *
+	 * @param id     The ID of the region to update.
+	 * @param region The updated region details from the request body.
+	 * @param result BindingResult that captures validation errors.
+	 * @return A ResponseEntity with the updated region if successful, or
+	 *         BAD_REQUEST if validation fails.
+	 */
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateRegion(@PathVariable("id") long id, @Validated @RequestBody Region region,
 			BindingResult result) {
@@ -70,6 +104,14 @@ public class RegionControleur {
 		}
 	}
 
+	/**
+	 * Deletes a region by its ID.
+	 *
+	 * @param id The ID of the region to delete.
+	 * @return A ResponseEntity with HTTP status NO_CONTENT if deleted successfully,
+	 *         or NOT_FOUND if the region does not exist.
+	 */
+
 	@DeleteMapping("/{id}")
 	public ResponseEntity<HttpStatus> deleteRegion(@PathVariable("id") long id) {
 		try {
@@ -79,6 +121,13 @@ public class RegionControleur {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
+
+	/**
+	 * Deletes all regions.
+	 *
+	 * @return A ResponseEntity with HTTP status NO_CONTENT if all regions are
+	 *         deleted successfully, or INTERNAL_SERVER_ERROR if an error occurs.
+	 */
 
 	@DeleteMapping
 	public ResponseEntity<HttpStatus> deleteAllRegions() {

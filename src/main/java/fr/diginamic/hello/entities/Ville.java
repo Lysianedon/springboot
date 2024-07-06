@@ -12,8 +12,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /**
- * Représente une ville avec un nom, un nombre d'habitants, un departement et un
- * identifiant unique.
+ * Represents a city with a name, population, department, and a unique
+ * identifier.
  */
 @Entity
 public class Ville {
@@ -56,25 +56,25 @@ public class Ville {
 	private Departement departement;
 
 	/**
-	 * Constructeur par défaut requis par JPA.
+	 * Default constructor required by JPA.
 	 */
 	public Ville() {
 	}
 
 	/**
-	 * Constructeur pour créer une ville avec tous les champs.
+	 * Constructor to create a city with all fields specified.
 	 *
-	 * @param nom                    le nom de la ville
-	 * @param nbHabitants            le nombre d'habitants de la ville
-	 * @param codeArrondissement     le code de l'arrondissement
-	 * @param codeCanton             le code du canton
-	 * @param codeCommune            le code de la commune
-	 * @param populationMunicipale   la population municipale
-	 * @param populationCompteeAPart la population comptée à part
-	 * @param populationTotale       la population totale
-	 * @param codeDepartement        le code du département
-	 * @param departement            le département
+	 * @param nom                    the name of the city
+	 * @param nbHabitants            the number of inhabitants
+	 * @param codeArrondissement     the arrondissement code
+	 * @param codeCanton             the canton code
+	 * @param codeCommune            the commune code
+	 * @param populationMunicipale   the municipal population
+	 * @param populationCompteeAPart the population counted separately
+	 * @param populationTotale       the total population
+	 * @param departement            the department
 	 */
+
 	public Ville(String nom, long nbHabitants, String codeArrondissement, String codeCanton, String codeCommune,
 			long populationMunicipale, long populationCompteeAPart, long populationTotale, Departement departement) {
 		this.nom = nom;

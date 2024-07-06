@@ -27,10 +27,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 
+/**
+ * Controller for managing cities. Provides endpoints for CRUD operations and
+ * more specific city queries.
+ */
 @RestController
 @RequestMapping("/villes")
 public class VilleControleur {
@@ -43,19 +45,28 @@ public class VilleControleur {
 
 	List<Ville> villes = new ArrayList<Ville>();
 
-	public VilleControleur() {
-
-	}
-
+	/**
+	 * Retrieves a paginated list of cities.
+	 *
+	 * @param page The page number to retrieve (default 0).
+	 * @param size The number of records per page (default 100).
+	 * @return A ResponseEntity containing a page of cities.
+	 */
 	@GetMapping
-	public ResponseEntity<Page<Ville>> getVilles(
-	    @RequestParam(value = "page", defaultValue = "0") int page,
-	    @RequestParam(value = "size", defaultValue = "100") int size) {
-	    Pageable pageable = PageRequest.of(page, size);
-	    Page<Ville> pageResult = villeService.extractVilles(pageable);
-	    return ResponseEntity.ok(pageResult);
+	public ResponseEntity<Page<Ville>> getVilles(@RequestParam(value = "page", defaultValue = "0") int page,
+			@RequestParam(value = "size", defaultValue = "100") int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		Page<Ville> pageResult = villeService.extractVilles(pageable);
+		return ResponseEntity.ok(pageResult);
 	}
 
+	/**
+	 * Retrieves a city by its ID.
+	 *
+	 * @param id The ID of the city to retrieve.
+	 * @return A ResponseEntity containing the city if found, or a NOT_FOUND status
+	 *         if not found.
+	 */
 	@GetMapping(path = "/{id}")
 	public ResponseEntity<?> getVille(@PathVariable int id) {
 		try {
@@ -66,6 +77,13 @@ public class VilleControleur {
 		}
 	}
 
+	/**
+	 * Creates a new city.
+	 *
+	 * @param body   The city to create.
+	 * @param result Contains any validation errors.
+	 * @return A ResponseEntity with the created city or validation errors if any.
+	 */
 	@PostMapping
 	public ResponseEntity<?> insertVille(@Valid @RequestBody Ville body, BindingResult result) {
 		if (result.hasErrors()) {
@@ -81,6 +99,14 @@ public class VilleControleur {
 		}
 	}
 
+	/**
+	 * Updates an existing city by its ID.
+	 *
+	 * @param body The updated city details.
+	 * @param id   The ID of the city to update.
+	 * @return A ResponseEntity containing the updated city or a NOT_FOUND status if
+	 *         the city is not found.
+	 */
 	@PutMapping(path = "/{id}")
 	public ResponseEntity<?> updateVille(@RequestBody Ville body, @PathVariable int id) {
 
@@ -92,6 +118,13 @@ public class VilleControleur {
 		}
 	}
 
+	/**
+	 * Deletes a city by its ID.
+	 *
+	 * @param id The ID of the city to delete.
+	 * @return A ResponseEntity with NO_CONTENT status if the city was successfully
+	 *         deleted or NOT_FOUND if the city is not found.
+	 */
 	@DeleteMapping(path = "/{id}")
 	public ResponseEntity<?> deleteVille(@PathVariable int id) {
 
@@ -103,7 +136,15 @@ public class VilleControleur {
 		}
 	}
 
-	@GetMapping("/departement/{departementId}/top")
+	/**
+	 * Retrieves the top n most populated cities in a specified department.
+	 *
+	 * @param departementId The ID of the department.
+	 * @param maxResults    The maximum number of cities to retrieve.
+	 * @return A ResponseEntity containing a list of cities if found, or NOT_FOUND
+	 *         if the department is not found.
+	 */
+	@GetMapping("/departement/{departementId}/top-villes")
 	public ResponseEntity<?> getTopNVillesByDepartement(@PathVariable int departementId,
 			@RequestParam(name = "maxResults", defaultValue = "5") int maxResults) {
 		List<Ville> villes = villeService.findTopNVillesByDepartement(departementId, maxResults);
@@ -113,6 +154,16 @@ public class VilleControleur {
 		return ResponseEntity.ok(villes);
 	}
 
+	/**
+	 * Retrieves cities within a specific population range in a specified
+	 * department.
+	 *
+	 * @param minPopulation The minimum population of the cities.
+	 * @param maxPopulation The maximum population of the cities.
+	 * @param departementId The ID of the department.
+	 * @return A ResponseEntity containing a list of cities if any match the
+	 *         criteria, or NOT_FOUND if none found.
+	 */
 	@GetMapping("/departement/{departementId}/population")
 	public ResponseEntity<?> getVillesByPopulationAndDepartement(
 			@RequestParam(name = "minPopulation") int minPopulation,
@@ -149,11 +200,10 @@ public class VilleControleur {
 	}
 
 	/**
-	 * Récupère toutes les villes dont la population est supérieure à un minimum
-	 * donné.
-	 * 
-	 * @param minPopulation le seuil minimal de population
-	 * @return une liste de villes filtrée
+	 * Retrieves all cities with a population greater than a specified minimum.
+	 *
+	 * @param minPopulation the minimum population threshold
+	 * @return a filtered list of cities
 	 */
 	@GetMapping("/search/by-min-population")
 	public ResponseEntity<?> getVillesByMinPopulation(@RequestParam int minPopulation) {
@@ -167,12 +217,12 @@ public class VilleControleur {
 	}
 
 	/**
-	 * Récupère toutes les villes dont la population est comprise entre un minimum
-	 * et un maximum spécifiés.
+	 * Retrieves all cities with a population between specified minimum and maximum
+	 * limits.
 	 *
-	 * @param minPopulation le seuil minimal de population
-	 * @param maxPopulation le seuil maximal de population
-	 * @return une liste de villes filtrée
+	 * @param minPopulation the minimum population threshold
+	 * @param maxPopulation the maximum population threshold
+	 * @return a filtered list of cities
 	 */
 	@GetMapping("/search/by-population-range")
 	public ResponseEntity<?> getVillesByPopulationRange(@RequestParam int minPopulation,
@@ -187,13 +237,13 @@ public class VilleControleur {
 	}
 
 	/**
-	 * Récupère toutes les villes d'un département donné dont la population est
-	 * supérieure à un minimum spécifié.
+	 * Retrieves all cities in a given department where the population is greater
+	 * than a specified minimum.
 	 *
-	 * @param departementCode le code du département
-	 * @param minPopulation   le seuil minimal de population
-	 * @return une liste de villes filtrée, ou une réponse 404 si le département
-	 *         n'est pas trouvé
+	 * @param departementCode the code of the department
+	 * @param minPopulation   the minimum population threshold
+	 * @return a filtered list of cities, or a 404 response if the department is not
+	 *         found
 	 */
 	@GetMapping("/search/by-departement-and-min-population")
 	public ResponseEntity<?> getVillesByDepartementAndMinPopulation(@RequestParam String departementCode,
@@ -213,14 +263,14 @@ public class VilleControleur {
 	}
 
 	/**
-	 * Récupère toutes les villes d'un département donné dont la population est
-	 * comprise entre un minimum et un maximum spécifiés.
+	 * Retrieves all cities in a given department where the population is between
+	 * specified minimum and maximum limits.
 	 *
-	 * @param departementCode le code du département
-	 * @param minPopulation   le seuil minimal de population
-	 * @param maxPopulation   le seuil maximal de population
-	 * @return une liste de villes filtrée, ou une réponse 404 si le département
-	 *         n'est pas trouvé
+	 * @param departementCode the code of the department
+	 * @param minPopulation   the minimum population threshold
+	 * @param maxPopulation   the maximum population threshold
+	 * @return a filtered list of cities, or a 404 response if the department is not
+	 *         found
 	 */
 	@GetMapping("/search/by-departement-and-population-range")
 	public ResponseEntity<?> getVillesByDepartementAndPopulationRange(@RequestParam String departementCode,
@@ -240,11 +290,11 @@ public class VilleControleur {
 	}
 
 	/**
-	 * Récupère les n villes les plus peuplées d'un département donné.
+	 * Retrieves the top n most populated cities in a given department.
 	 *
-	 * @param departementCode le code du département
-	 * @param n               le nombre de villes à retourner
-	 * @return une liste des villes les plus peuplées
+	 * @param departementCode the code of the department
+	 * @param n               the number of cities to return
+	 * @return a list of the most populated cities
 	 */
 	@GetMapping("/search/top-n-by-departement")
 	public ResponseEntity<?> getTopNVillesByDepartement(@RequestParam String departementCode, @RequestParam int n) {
