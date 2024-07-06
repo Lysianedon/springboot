@@ -1,4 +1,4 @@
-package fr.diginamic.hello.classes;
+package fr.diginamic.hello.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -13,54 +13,52 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 public class Departement {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID")
-    private int id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ID")
+	private int id;
 
-    @Column(name = "NOM")
-    @NotNull
-    @Size(min = 1, max = 100)
-    private String nom;
+	@Column(name = "CODE")
+	@NotNull
+	@Size(min = 1, max = 10)
+	private String code;
 
-    @OneToMany(mappedBy = "departement", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Set<Ville> villes = new HashSet<>();;
+	@ManyToOne
+	@JoinColumn(name = "REGION_ID")
+	@JsonIgnore
+	private Region region;
 
-    public Departement() {
-    }
+	public Departement() {
+	}
 
-    public Departement(String nom) {
-        this.nom = nom;
-    }
+	public Departement(String code, Region region) {
+		this.code = code;
+		this.region = region;
+	}
 
-    public int getId() {
-        return id;
-    }
+	public String getCode() {
+		return code;
+	}
 
-    public String getNom() {
-        return nom;
-    }
+	public void setCode(String code) {
+		this.code = code;
+	}
 
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
-    
-    public void addVille(Ville ville) {
-        villes.add(ville);
-        ville.setDepartement(this);
-    }
-    
-    public void removeVille(Ville ville) {
-        villes.remove(ville);
-        ville.setDepartement(null);
-    }
+	public Region getRegion() {
+		return region;
+	}
 
-    public Set<Ville> getVilles() {
-        return villes;
-    }
+	public void setRegion(Region region) {
+		this.region = region;
+	}
 
-    public void setVilles(Set<Ville> villes) {
-        this.villes = villes;
-    }
+	public int getId() {
+		return id;
+	}
+
+	@Override
+	public String toString() {
+		return "Departement [id=" + id + ", code=" + code + ", region=" + region + "]";
+	}
+
 }
