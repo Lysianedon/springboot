@@ -1,7 +1,6 @@
 package fr.diginamic.hello.services;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import fr.diginamic.hello.entities.Departement;
 import fr.diginamic.hello.entities.Region;
+import fr.diginamic.hello.exceptions.DepartementNotFoundException;
 import fr.diginamic.hello.repositories.DepartementRepository;
-import fr.diginamic.hello.repositories.RegionRepository;
 import jakarta.persistence.EntityNotFoundException;
 
 /**
@@ -23,9 +22,9 @@ public class DepartementService {
 
 	@Autowired
 	private DepartementRepository departementRepository;
-
+	
 	@Autowired
-	private RegionRepository regionRepository;
+	private RegionService regionService;
 
 	/**
 	 * Retrieves all departments.
@@ -47,7 +46,7 @@ public class DepartementService {
 	@Transactional(readOnly = true)
 	public Departement extractDepartement(int id) {
 		return departementRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("Departement non trouvé avec ID : " + id));
+				.orElseThrow(() -> new DepartementNotFoundException("Departement non trouvé avec ID : " + id));
 	}
 
 	/**
@@ -61,7 +60,7 @@ public class DepartementService {
 	@Transactional(readOnly = true)
 	public Departement getDepartementByCode(String code) {
 		return departementRepository.findByCode(code).orElseThrow(
-				() -> new IllegalArgumentException("Le département avec le code " + code + " n'existe pas."));
+				() -> new DepartementNotFoundException("Le département avec le code " + code + " n'existe pas."));
 	}
 
 	/**
@@ -82,12 +81,8 @@ public class DepartementService {
 
 		Region region = departement.getRegion();
 		if (region != null) {
-			Optional<Region> existingRegion = regionRepository.findById(region.getId());
-			if (existingRegion.isPresent()) {
-				departement.setRegion(existingRegion.get());
-			} else {
-				throw new IllegalArgumentException("La région spécifiée n'existe pas.");
-			}
+			Region existingRegion = regionService.findById(region.getId());
+			departement.setRegion(existingRegion);
 		}
 		return departementRepository.save(departement);
 	}

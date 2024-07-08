@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import fr.diginamic.hello.entities.Region;
 import fr.diginamic.hello.repositories.RegionRepository;
+import jakarta.persistence.EntityNotFoundException;
 
 /**
  * Service class for managing regions. This class handles the business logic
@@ -138,13 +139,18 @@ public class RegionService {
 	 *
 	 * @param codeRegion The code of the region.
 	 * @return The region.
-	 * @throws IllegalArgumentException if the region with the specified code does
-	 *                                  not exist.
+	 * @throws EntityNotFoundException if the region with the specified code does
+	 *                                 not exist.
 	 */
 
 	@Transactional(readOnly = true)
 	public Region findByCode(String codeRegion) {
 		return regionRepository.findByCode(codeRegion).orElseThrow(
-				() -> new IllegalArgumentException("La région avec le code " + codeRegion + " n'existe pas."));
+				() -> new EntityNotFoundException("La région avec le code " + codeRegion + " n'existe pas."));
+	}
+
+	public Region findById(long id) {
+		return regionRepository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("La région avec le code " + id + " n'existe pas."));
 	}
 }

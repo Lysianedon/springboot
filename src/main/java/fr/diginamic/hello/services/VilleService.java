@@ -9,13 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import fr.diginamic.hello.entities.Departement;
 import fr.diginamic.hello.entities.Ville;
-import fr.diginamic.hello.exceptions.EntityException;
+import fr.diginamic.hello.exceptions.DepartementNotFoundException;
+import fr.diginamic.hello.exceptions.VilleNotFoundException;
 import fr.diginamic.hello.repositories.DepartementRepository;
 import fr.diginamic.hello.repositories.VilleRepository;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Service class for managing city entities.
@@ -28,6 +28,9 @@ public class VilleService {
 
 	@Autowired
 	private DepartementRepository departementRepository;
+
+	@Autowired
+	private DepartementService departementService;
 
 	/**
 	 * Retrieves a paginated list of all cities.
@@ -81,11 +84,11 @@ public class VilleService {
 				&& departementRepository.existsById(ville.getDepartement().getId());
 
 		if (villeExists) {
-			throw new EntityException("La ville existe déjà.");
+			throw new IllegalArgumentException("La ville existe déjà.");
 		}
 
 		if (!departementExists) {
-			throw new IllegalArgumentException("Département non renseigné ou introuvable.");
+			throw new DepartementNotFoundException("Département non renseigné ou introuvable.");
 		}
 
 		Departement departement = departementRepository.findById(ville.getDepartement().getId()).get();
@@ -135,13 +138,9 @@ public class VilleService {
 	 */
 	@Transactional(readOnly = true)
 	public List<Ville> findTopNVillesByDepartement(int departementId, int maxResults) {
-		Optional<Departement> departementOpt = departementRepository.findById(departementId);
-		if (departementOpt.isPresent()) {
-			Departement departement = departementOpt.get();
-			PageRequest pageRequest = PageRequest.of(0, maxResults);
-			return villeRepository.findByDepartementOrderByNbHabitantsDesc(departement, pageRequest);
-		}
-		return null;
+		Departement departement = departementService.extractDepartement(departementId);
+		PageRequest pageRequest = PageRequest.of(0, maxResults);
+		return villeRepository.findByDepartementOrderByNbHabitantsDesc(departement, pageRequest);
 	}
 
 	/**
@@ -178,7 +177,11 @@ public class VilleService {
 	 */
 	@Transactional(readOnly = true)
 	public List<Ville> findByNomStartingWith(String prefix) {
-		return villeRepository.findByNomStartingWith(prefix);
+		List<Ville> result = villeRepository.findByNomStartingWith(prefix);
+		if (result.isEmpty()) {
+			throw new VilleNotFoundException("Aucune ville dont le nom commence par " + prefix + " n’a été trouvée.");
+		}
+		return result;
 	}
 
 	/**
@@ -191,7 +194,11 @@ public class VilleService {
 	 */
 	@Transactional(readOnly = true)
 	public List<Ville> findByNbHabitantsGreaterThan(int minPopulation) {
-		return villeRepository.findByNbHabitantsGreaterThan(minPopulation);
+		List<Ville> result = villeRepository.findByNbHabitantsGreaterThan(minPopulation);
+		if (result.isEmpty()) {
+			throw new VilleNotFoundException("Aucune ville n’a une population supérieure à " + minPopulation);
+		}
+		return result;
 	}
 
 	/**
@@ -204,8 +211,15 @@ public class VilleService {
 	 *         minimum and maximum.
 	 */
 	@Transactional(readOnly = true)
-	public List<Ville> findByNbHabitantsBetween(int minPopulation, int maxPopulation) {
-		return villeRepository.findByNbHabitantsBetween(minPopulation, maxPopulation);
+	public List<Ville> findByNbHabitantsBetween(long minPopulation, long maxPopulation) {
+
+		List<Ville> result = villeRepository.findByNbHabitantsBetween(minPopulation, maxPopulation);
+
+		if (result.isEmpty()) {
+			throw new VilleNotFoundException(
+					"Aucune ville n’a une population comprise entre " + minPopulation + " et " + maxPopulation);
+		}
+		return result;
 	}
 
 	/**
@@ -219,7 +233,14 @@ public class VilleService {
 	 */
 	@Transactional(readOnly = true)
 	public List<Ville> findByDepartementAndNbHabitantsGreaterThan(Departement departement, int minPopulation) {
-		return villeRepository.findByDepartementAndNbHabitantsGreaterThan(departement, minPopulation);
+
+		List<Ville> result = villeRepository.findByDepartementAndNbHabitantsGreaterThan(departement, minPopulation);
+
+		if (result.isEmpty()) {
+			throw new VilleNotFoundException("Aucune ville n’a une population supérieure à " + minPopulation
+					+ "dans le département " + departement.getCode());
+		}
+		return result;
 	}
 
 	/**
@@ -235,7 +256,13 @@ public class VilleService {
 	@Transactional(readOnly = true)
 	public List<Ville> findByDepartementAndNbHabitantsBetween(Departement departement, int minPopulation,
 			int maxPopulation) {
-		return villeRepository.findByDepartementAndNbHabitantsBetween(departement, minPopulation, maxPopulation);
+		List<Ville> result = villeRepository.findByDepartementAndNbHabitantsBetween(departement, minPopulation,
+				maxPopulation);
+		if (result.isEmpty()) {
+			throw new VilleNotFoundException("Aucune ville n’a une population comprise entre " + minPopulation + " et "
+					+ maxPopulation + " dans le département " + departement.getCode());
+		}
+		return result;
 	}
 
 	/**
