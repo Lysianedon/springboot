@@ -87,7 +87,7 @@ public interface VilleRepository extends JpaRepository<Ville, Integer> {
 	 * @param maxPopulation The maximum population threshold.
 	 * @return A list of cities whose populations fall within the specified range.
 	 */
-	List<Ville> findByNbHabitantsBetween(int minPopulation, int maxPopulation);
+	List<Ville> findByNbHabitantsBetween(long minPopulation, long maxPopulation);
 
 	/**
 	 * Finds all cities in a specified department where the population is greater
