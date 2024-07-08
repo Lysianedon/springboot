@@ -2,8 +2,6 @@ package fr.diginamic.hello.controleurs;
 
 import java.util.List;
 
-import jakarta.persistence.EntityNotFoundException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.AccessException;
 import org.springframework.http.HttpStatus;
@@ -52,12 +50,8 @@ public class DepartementControleur {
 	 */
 	@GetMapping(path = "/{id}")
 	public ResponseEntity<?> getDepartement(@PathVariable int id) {
-		try {
-			Departement departement = depService.extractDepartement(id);
-			return ResponseEntity.ok(departement);
-		} catch (EntityNotFoundException e) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Departement non trouvé");
-		}
+		Departement departement = depService.extractDepartement(id);
+		return ResponseEntity.ok(departement);
 	}
 
 	/**
@@ -92,12 +86,8 @@ public class DepartementControleur {
 	@PutMapping(path = "/{id}")
 	public ResponseEntity<?> updateDepartement(@RequestBody Departement body, @PathVariable int id) {
 
-		try {
-			Departement updatedDepartement = depService.updateDepartement(id, body);
-			return ResponseEntity.ok(updatedDepartement);
-		} catch (EntityNotFoundException e) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Departement non trouvé");
-		}
+		Departement updatedDepartement = depService.updateDepartement(id, body);
+		return ResponseEntity.ok(updatedDepartement);
 	}
 
 	/**
@@ -110,12 +100,8 @@ public class DepartementControleur {
 	@DeleteMapping(path = "/{id}")
 	public ResponseEntity<?> deleteDepartement(@PathVariable int id) {
 
-		try {
-			depService.deleteDepartement(id);
-			return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-		} catch (EntityNotFoundException e) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Departement non trouvé");
-		}
+		depService.deleteDepartement(id);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
 }

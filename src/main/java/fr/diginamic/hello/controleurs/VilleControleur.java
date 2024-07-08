@@ -8,7 +8,6 @@ import fr.diginamic.hello.entities.Departement;
 import fr.diginamic.hello.entities.Ville;
 import fr.diginamic.hello.services.DepartementService;
 import fr.diginamic.hello.services.VilleService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,12 +68,9 @@ public class VilleControleur {
 	 */
 	@GetMapping(path = "/{id}")
 	public ResponseEntity<?> getVille(@PathVariable int id) {
-		try {
-			Ville ville = villeService.extractVille(id);
-			return ResponseEntity.ok(ville);
-		} catch (EntityNotFoundException e) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ville non trouvée");
-		}
+		Ville ville = villeService.extractVille(id);
+		return ResponseEntity.ok(ville);
+
 	}
 
 	/**
@@ -91,12 +87,8 @@ public class VilleControleur {
 					result.getAllErrors().stream().map(e -> e.getDefaultMessage()).collect(Collectors.joining("\n")));
 		}
 
-		try {
-			Ville newVille = villeService.createVille(body);
-			return ResponseEntity.status(HttpStatus.CREATED).body(newVille);
-		} catch (IllegalArgumentException e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
+		Ville newVille = villeService.createVille(body);
+		return ResponseEntity.status(HttpStatus.CREATED).body(newVille);
 	}
 
 	/**
@@ -108,14 +100,15 @@ public class VilleControleur {
 	 *         the city is not found.
 	 */
 	@PutMapping(path = "/{id}")
-	public ResponseEntity<?> updateVille(@RequestBody Ville body, @PathVariable int id) {
+	public ResponseEntity<?> updateVille(@Valid @RequestBody Ville body, @PathVariable int id, BindingResult result) {
 
-		try {
-			Ville updatedVille = villeService.modifierVille(id, body);
-			return ResponseEntity.ok(updatedVille);
-		} catch (EntityNotFoundException e) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ville non trouvée");
+		if (result.hasErrors()) {
+			return ResponseEntity.badRequest().body(
+					result.getAllErrors().stream().map(e -> e.getDefaultMessage()).collect(Collectors.joining("\n")));
 		}
+
+		Ville updatedVille = villeService.modifierVille(id, body);
+		return ResponseEntity.ok(updatedVille);
 	}
 
 	/**
@@ -127,13 +120,8 @@ public class VilleControleur {
 	 */
 	@DeleteMapping(path = "/{id}")
 	public ResponseEntity<?> deleteVille(@PathVariable int id) {
-
-		try {
-			villeService.supprimerVille(id);
-			return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-		} catch (EntityNotFoundException e) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ville non trouvée");
-		}
+		villeService.supprimerVille(id);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
 	/**
@@ -148,9 +136,6 @@ public class VilleControleur {
 	public ResponseEntity<?> getTopNVillesByDepartement(@PathVariable int departementId,
 			@RequestParam(name = "maxResults", defaultValue = "5") int maxResults) {
 		List<Ville> villes = villeService.findTopNVillesByDepartement(departementId, maxResults);
-		if (villes == null) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Departement non trouvé");
-		}
 		return ResponseEntity.ok(villes);
 	}
 
@@ -172,12 +157,6 @@ public class VilleControleur {
 		Departement departement = depService.extractDepartement(departementId);
 		List<Ville> villes = villeService.findVillesByPopulationAndDepartement(minPopulation, maxPopulation,
 				departement);
-
-		if (villes.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND)
-					.body("Aucune ville trouvée pour les critères spécifiés.");
-		}
-
 		return ResponseEntity.ok(villes);
 	}
 
@@ -188,15 +167,9 @@ public class VilleControleur {
 	 * @return A list of Ville objects or an empty list if none found.
 	 */
 	@GetMapping("/search")
-	public ResponseEntity<?> getVillesByNomStartingWith(@RequestParam String prefix) {
-		try {
-			List<Ville> villes = villeService.findByNomStartingWith(prefix);
-			return ResponseEntity.ok(villes);
-		} catch (Exception e) {
-			System.err.printf("Failed to fetch cities", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body("Unable to fetch cities due to internal error.");
-		}
+	public ResponseEntity<List<Ville>> getVillesByNomStartingWith(@RequestParam String prefix) {
+		List<Ville> villes = villeService.findByNomStartingWith(prefix);
+		return ResponseEntity.ok(villes);
 	}
 
 	/**
@@ -206,14 +179,9 @@ public class VilleControleur {
 	 * @return a filtered list of cities
 	 */
 	@GetMapping("/search/by-min-population")
-	public ResponseEntity<?> getVillesByMinPopulation(@RequestParam int minPopulation) {
-		try {
-			List<Ville> villes = villeService.findByNbHabitantsGreaterThan(minPopulation);
-			return ResponseEntity.ok(villes);
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body("Erreur lors de la récupération des villes: " + e.getMessage());
-		}
+	public ResponseEntity<List<Ville>> getVillesByMinPopulation(@RequestParam int minPopulation) {
+		List<Ville> villes = villeService.findByNbHabitantsGreaterThan(minPopulation);
+		return ResponseEntity.ok(villes);
 	}
 
 	/**
@@ -225,15 +193,9 @@ public class VilleControleur {
 	 * @return a filtered list of cities
 	 */
 	@GetMapping("/search/by-population-range")
-	public ResponseEntity<?> getVillesByPopulationRange(@RequestParam int minPopulation,
-			@RequestParam int maxPopulation) {
-
-		try {
-			return ResponseEntity.ok(villeService.findByNbHabitantsBetween(minPopulation, maxPopulation));
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body("Erreur lors de la récupération des villes: " + e.getMessage());
-		}
+	public ResponseEntity<?> getVillesByPopulationRange(@RequestParam long minPopulation,
+			@RequestParam long maxPopulation) {
+		return ResponseEntity.ok(villeService.findByNbHabitantsBetween(minPopulation, maxPopulation));
 	}
 
 	/**
@@ -246,20 +208,11 @@ public class VilleControleur {
 	 *         found
 	 */
 	@GetMapping("/search/by-departement-and-min-population")
-	public ResponseEntity<?> getVillesByDepartementAndMinPopulation(@RequestParam String departementCode,
+	public ResponseEntity<List<Ville>> getVillesByDepartementAndMinPopulation(@RequestParam String departementCode,
 			@RequestParam int minPopulation) {
-		if (!depService.existsByCode(departementCode)) {
-			return ResponseEntity.notFound().build();
-		}
-
-		try {
-			Departement departement = depService.getDepartementByCode(departementCode);
-			List<Ville> villes = villeService.findByDepartementAndNbHabitantsGreaterThan(departement, minPopulation);
-			return ResponseEntity.ok(villes);
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body("Erreur lors de la récupération des villes: " + e.getMessage());
-		}
+		Departement departement = depService.getDepartementByCode(departementCode);
+		List<Ville> villes = villeService.findByDepartementAndNbHabitantsGreaterThan(departement, minPopulation);
+		return ResponseEntity.ok(villes);
 	}
 
 	/**
@@ -273,20 +226,13 @@ public class VilleControleur {
 	 *         found
 	 */
 	@GetMapping("/search/by-departement-and-population-range")
-	public ResponseEntity<?> getVillesByDepartementAndPopulationRange(@RequestParam String departementCode,
+	public ResponseEntity<List<Ville>> getVillesByDepartementAndPopulationRange(@RequestParam String departementCode,
 			@RequestParam int minPopulation, @RequestParam int maxPopulation) {
-		if (!depService.existsByCode(departementCode)) {
-			return ResponseEntity.notFound().build();
-		}
-		try {
-			Departement departement = depService.getDepartementByCode(departementCode);
-			List<Ville> villes = villeService.findByDepartementAndNbHabitantsBetween(departement, minPopulation,
-					maxPopulation);
-			return ResponseEntity.ok(villes);
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body("Erreur lors de la récupération des villes: " + e.getMessage());
-		}
+		Departement departement = depService.getDepartementByCode(departementCode);
+
+		List<Ville> villes = villeService.findByDepartementAndNbHabitantsBetween(departement, minPopulation,
+				maxPopulation);
+		return ResponseEntity.ok(villes);
 	}
 
 	/**
@@ -297,19 +243,12 @@ public class VilleControleur {
 	 * @return a list of the most populated cities
 	 */
 	@GetMapping("/search/top-n-by-departement")
-	public ResponseEntity<?> getTopNVillesByDepartement(@RequestParam String departementCode, @RequestParam int n) {
-		if (!depService.existsByCode(departementCode)) {
-			return ResponseEntity.notFound().build();
-		}
+	public ResponseEntity<List<Ville>> getTopNVillesByDepartement(@RequestParam String departementCode,
+			@RequestParam int n) {
+		Departement departement = depService.getDepartementByCode(departementCode);
 
-		try {
-			Departement departement = depService.getDepartementByCode(departementCode);
-			Pageable pageable = PageRequest.of(0, n, Sort.by(Sort.Direction.DESC, "nbHabitants"));
-			List<Ville> villes = villeService.findTopNVillesByDepartementOrderByNbHabitantsDesc(departement, pageable);
-			return ResponseEntity.ok(villes);
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body("Erreur lors de la récupération des villes: " + e.getMessage());
-		}
+		Pageable pageable = PageRequest.of(0, n, Sort.by(Sort.Direction.DESC, "nbHabitants"));
+		List<Ville> villes = villeService.findTopNVillesByDepartementOrderByNbHabitantsDesc(departement, pageable);
+		return ResponseEntity.ok(villes);
 	}
 }
