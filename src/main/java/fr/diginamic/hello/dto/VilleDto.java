@@ -2,25 +2,26 @@ package fr.diginamic.hello.dto;
 
 public class VilleDto {
 
-	private String codeVille;
+	private String nomVille;
 	private long nombreHabitants;
 	private String codeDepartement;
+	private String nomDepartement;
 
 	public VilleDto() {
 	}
 
-	public VilleDto(String codeVille, long nombreHabitants, String codeDepartement) {
-		this.codeVille = codeVille;
+	public VilleDto(String nomVille, long nombreHabitants, String codeDepartement) {
+		this.nomVille = nomVille;
 		this.nombreHabitants = nombreHabitants;
 		this.codeDepartement = codeDepartement;
 	}
 
-	public String getCodeVille() {
-		return codeVille;
+	public String getNomVille() {
+		return nomVille;
 	}
 
-	public void setCodeVille(String codeVille) {
-		this.codeVille = codeVille;
+	public void setNomVille(String nomVille) {
+		this.nomVille = nomVille;
 	}
 
 	public long getNombreHabitants() {
@@ -39,9 +40,17 @@ public class VilleDto {
 		this.codeDepartement = codeDepartement;
 	}
 
+	public String getNomDepartement() {
+		return nomDepartement;
+	}
+
+	public void setNomDepartement(String nomDepartement) {
+		this.nomDepartement = nomDepartement;
+	}
+	
 	@Override
 	public String toString() {
-		return "VilleDto{" + "codeVille='" + codeVille + '\'' + ", nombreHabitants=" + nombreHabitants
+		return "VilleDto{" + "nomVille='" + nomVille + '\'' + ", nombreHabitants=" + nombreHabitants
 				+ ", codeDepartement='" + codeDepartement + '\'' + '}';
 	}
 }
