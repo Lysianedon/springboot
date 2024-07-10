@@ -4,18 +4,34 @@ import fr.diginamic.hello.dto.VilleDto;
 import fr.diginamic.hello.entities.Departement;
 import fr.diginamic.hello.entities.Ville;
 
-public class ClientMapper {
+public class VilleMapper {
 
 	public static VilleDto toDto(Ville ville) {
 		if (ville == null) {
 			return null;
 		}
 		VilleDto dto = new VilleDto();
-		dto.setCodeVille(ville.getCodeCommune());
+
 		dto.setNombreHabitants(ville.getPopulationTotale());
 		if (ville.getDepartement() != null) {
 			dto.setCodeDepartement(ville.getDepartement().getCode());
 		}
+		return dto;
+	}
+
+	public VilleDto toDto(String nomVille, long nombreHabitants, String codeDepartement, String nomDepartement) {
+
+		if (nomVille == null || nomVille.isEmpty() || nomDepartement == null || nomDepartement.isEmpty()) {
+			 throw new IllegalArgumentException("Nom de ville ou nom de département est manquant.");
+		}
+		
+		VilleDto dto = new VilleDto();
+
+		dto.setNomVille(nomVille);
+		dto.setNombreHabitants(nombreHabitants);
+		dto.setCodeDepartement(codeDepartement);
+		dto.setNomDepartement(nomDepartement);
+
 		return dto;
 	}
 
@@ -24,7 +40,7 @@ public class ClientMapper {
 			return null;
 		}
 		Ville ville = new Ville();
-		ville.setCodeCommune(dto.getCodeVille());
+
 		ville.setPopulationTotale(dto.getNombreHabitants());
 		Departement departement = new Departement();
 		departement.setCode(dto.getCodeDepartement());
