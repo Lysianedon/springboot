@@ -78,7 +78,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 	 */
 	protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers,
 			HttpStatus status, WebRequest request) {
-		if (body instanceof String) {
+		if (body instanceof String && ex.getClass().getSimpleName() == "VilleNotFoundException") {
 			body = new ErrorDetails(LocalDateTime.now(), status.value(), ex.getClass().getSimpleName(), (String) body);
 		}
 		return super.handleExceptionInternal(ex, body, headers, status, request);

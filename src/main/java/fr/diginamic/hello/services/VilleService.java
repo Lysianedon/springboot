@@ -53,7 +53,7 @@ public class VilleService {
 	@Transactional(readOnly = true)
 	public Ville extractVille(int idVille) {
 		return villeRepository.findById(idVille)
-				.orElseThrow(() -> new EntityNotFoundException("Ville non trouvée avec ID : " + idVille));
+				.orElseThrow(() -> new VilleNotFoundException("Ville non trouvée avec ID : " + idVille));
 	}
 
 	/**
@@ -66,7 +66,7 @@ public class VilleService {
 	@Transactional(readOnly = true)
 	public Ville extractVille(String nom) {
 		return villeRepository.findByNom(nom)
-				.orElseThrow(() -> new EntityNotFoundException("Ville non trouvée avec nom : " + nom));
+				.orElseThrow(() -> new VilleNotFoundException("Ville non trouvée avec nom : " + nom));
 	}
 
 	/**
