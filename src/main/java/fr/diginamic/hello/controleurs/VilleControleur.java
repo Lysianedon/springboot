@@ -1,12 +1,17 @@
 package fr.diginamic.hello.controleurs;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import fr.diginamic.hello.dto.VilleDto;
 import fr.diginamic.hello.entities.Departement;
 import fr.diginamic.hello.entities.Ville;
+import fr.diginamic.hello.services.CSVGenerationService;
 import fr.diginamic.hello.services.DepartementService;
+import fr.diginamic.hello.services.PdfGenerationService;
 import fr.diginamic.hello.services.VilleService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,13 +20,16 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,6 +41,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.itextpdf.text.DocumentException;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
@@ -50,6 +61,15 @@ public class VilleControleur {
 
 	@Autowired
 	private DepartementService depService;
+
+	@Autowired
+	private PdfGenerationService pdfGenerationService;
+
+	@Autowired
+	private CSVGenerationService csvExportService;
+	
+	@Autowired
+	private CSVGenerationService csvGenerationService;
 
 	List<Ville> villes = new ArrayList<Ville>();
 
@@ -315,4 +335,70 @@ public class VilleControleur {
 		List<Ville> villes = villeService.findTopNVillesByDepartementOrderByNbHabitantsDesc(departement, pageable);
 		return ResponseEntity.ok(villes);
 	}
+
+	/**
+	 * Exports the top N cities into a PDF file.
+	 * 
+	 * @param nbVilles Number of top cities to include in the PDF.
+	 * @param response HttpServletResponse for setting up the file download.
+	 * @throws IOException       If an input or output exception occurred
+	 * @throws DocumentException If there is an error during document creation
+	 */
+
+	@Operation(summary = "Export the top N cities to a PDF file", description = "Downloads a PDF file containing the top N cities based on the specified number.")
+	@ApiResponse(responseCode = "200", description = "PDF file successfully downloaded")
+	@GetMapping("/pdf-export-top-villes")
+	public void exportTopNVillesToPDF(@RequestParam int nbVilles, HttpServletResponse response)
+			throws DocumentException, IOException {
+		response.setHeader("Content-Disposition", "attachment; filename=\"top_villes.pdf\"");
+		List<VilleDto> cities = villeService
+				.getTopNVillesDtos(PageRequest.of(0, nbVilles, Sort.by(Sort.Direction.DESC, "nbHabitants")));
+		pdfGenerationService.generateTopCitiesReport(cities, response.getOutputStream(), nbVilles);
+		response.flushBuffer();
+	}
+
+	/**
+	 * Exports the top N cities into a CSV file.
+	 * 
+	 * @param nbVilles Number of top cities to include in the CSV.
+	 * @param response HttpServletResponse for setting up the file download.
+	 * @throws IOException If an input or output exception occurred
+	 */
+
+	@Operation(summary = "Export the top N cities to a CSV file", description = "Downloads a CSV file containing the top N cities based on the specified number.")
+	@ApiResponse(responseCode = "200", description = "CSV file successfully downloaded")
+	@GetMapping("/csv-export-top-villes")
+	public void exportTopNVillesToCSV(@RequestParam int nbVilles, HttpServletResponse response) throws IOException {
+		if (nbVilles <= 0) {
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().write("Le nombre de villes doit etre supérieur à zero.");
+			return;
+		}
+		response.setHeader("Content-Disposition", "attachment; filename=\"top_villes.csv\"");
+
+		List<VilleDto> cities = villeService
+				.getTopNVillesDtos(PageRequest.of(0, nbVilles, Sort.by(Sort.Direction.DESC, "nbHabitants")));
+
+		csvExportService.generateCitiesCsvReport(cities, response.getOutputStream());
+		response.flushBuffer();
+	}
+
+//	@GetMapping("/csv-export-top-villes")
+//	public ResponseEntity<InputStreamResource> exportTopNVillesToCSV(@RequestParam int nbVilles,
+//			HttpServletResponse response) throws IOException {
+//		if (nbVilles <= 0) {
+//			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+//			response.getWriter().write("Le nombre de villes doit être supérieur à zéro.");
+//			return null;
+//		}
+//
+//		List<VilleDto> cities = villeService
+//				.getTopNVillesDtos(PageRequest.of(0, nbVilles, Sort.by(Sort.Direction.DESC, "nbHabitants")));
+//		ByteArrayInputStream byteArrayInputStream = csvGenerationService.generateCitiesCsvReport(cities);
+//
+//		return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=top_villes.csv")
+//				.contentType(MediaType.parseMediaType("application/csv"))
+//				.body(new InputStreamResource(byteArrayInputStream));
+//	}
+
 }

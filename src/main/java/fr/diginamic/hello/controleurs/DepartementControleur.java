@@ -1,5 +1,6 @@
 package fr.diginamic.hello.controleurs;
 
+import java.io.IOException;
 import java.util.List;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.AccessException;
@@ -23,8 +25,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.itextpdf.text.DocumentException;
+
 import fr.diginamic.hello.entities.Departement;
+import fr.diginamic.hello.entities.Ville;
 import fr.diginamic.hello.services.DepartementService;
+import fr.diginamic.hello.services.PdfGenerationService;
+import fr.diginamic.hello.services.VilleService;
 
 /**
  * REST controller for managing departments. This controller handles the HTTP
@@ -38,6 +45,12 @@ public class DepartementControleur {
 
 	@Autowired
 	DepartementService depService;
+
+	@Autowired
+	VilleService villeService;
+
+	@Autowired
+	PdfGenerationService pdfGenerationService;
 
 	/**
 	 * Retrieves all departments.
@@ -132,6 +145,31 @@ public class DepartementControleur {
 
 		depService.deleteDepartement(id);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+
+	/**
+	 * Exports the cities from a given department into a PDF file.
+	 * 
+	 * @param codeDepartement the department's code to include in the PDF.
+	 * @param response        HttpServletResponse for setting up the file download.
+	 * @throws IOException       If an input or output exception occurred
+	 * @throws DocumentException If there is an error during document creation
+	 */
+
+	@Operation(summary = "Exports the cities from a given department into a PDF file", description = "Downloads a PDF file containing the cities of a given department based on the specified department's code.")
+	@ApiResponse(responseCode = "200", description = "PDF file successfully downloaded")
+	@GetMapping("/{codeDepartement}/villes/pdf-export")
+	public void exportDepartementVillesToPDF(@PathVariable String codeDepartement, HttpServletResponse response)
+			throws DocumentException, IOException {
+		response.setHeader("Content-Disposition", "attachment; filename=\"top_villes.pdf\"");
+		Departement departement = depService.getDepartementByCode(codeDepartement);
+		List<Ville> cities = villeService.findByDepartement(departement);
+
+		String titlePDF = "Liste des villes du département " + codeDepartement;
+		String[] headers = { "NOM VILLE", "POPULATION" };
+
+		pdfGenerationService.generatePDFReport(titlePDF, headers, cities, response.getOutputStream());
+		response.flushBuffer();
 	}
 
 }
