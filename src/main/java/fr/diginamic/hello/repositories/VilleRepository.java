@@ -124,8 +124,20 @@ public interface VilleRepository extends JpaRepository<Ville, Integer> {
 	 */
 	List<Ville> findTopNVillesByDepartementOrderByNbHabitantsDesc(Departement departement, Pageable pageable);
 
+	/**
+	 * Finds all cities and orders them by population in descending order.
+	 *
+	 * @param pageable the pagination information
+	 * @return a page of cities ordered by population in descending order
+	 */
 	Page<Ville> findByOrderByNbHabitantsDesc(Pageable pageable);
 
+	/**
+	 * Finds all cities in a given department.
+	 *
+	 * @param departement the department to search for cities
+	 * @return a list of cities in the specified department
+	 */
 	List<Ville> findByDepartement(Departement departement);
 
 }

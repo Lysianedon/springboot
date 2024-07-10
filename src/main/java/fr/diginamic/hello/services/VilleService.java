@@ -23,7 +23,6 @@ import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 
-
 /**
  * Service class for managing city entities.
  */
@@ -360,9 +359,15 @@ public class VilleService {
 		return villeRepository.findTopNVillesByDepartementOrderByNbHabitantsDesc(departement, pageable);
 	}
 
+	/**
+	 * Retrieves a list of cities in a specified department.
+	 *
+	 * @param departement the department to search for cities
+	 * @return a list of cities in the specified department
+	 */
+
 	@Transactional(readOnly = true)
 	public List<Ville> findByDepartement(Departement departement) {
 		return villeRepository.findByDepartement(departement);
 	}
-
 }
