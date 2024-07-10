@@ -37,6 +37,22 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 			WebRequest request) {
 		return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
 	}
+	
+	/**
+	 * Handles exceptions that are categorized as functional faults, which can occur
+	 * due to business logic failures.
+	 *
+	 * @param ex      the captured functional exception
+	 * @param request the web request object
+	 * @return a ResponseEntity configured with an appropriate HTTP status
+	 */
+	@ExceptionHandler(FunctionalException.class)
+	protected ResponseEntity<Object> handleFunctionalException(FunctionalException ex, WebRequest request) {
+		HttpStatus status = HttpStatus.BAD_REQUEST; 
+		ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), status.value(), "Functional Error",
+				ex.getMessage());
+		return handleExceptionInternal(ex, errorDetails, new HttpHeaders(), status, request);
+	}
 
 	/**
 	 * Handles exceptions related to illegal arguments, often triggered by invalid
