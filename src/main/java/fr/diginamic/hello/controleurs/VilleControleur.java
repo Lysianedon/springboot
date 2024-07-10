@@ -8,6 +8,14 @@ import fr.diginamic.hello.entities.Departement;
 import fr.diginamic.hello.entities.Ville;
 import fr.diginamic.hello.services.DepartementService;
 import fr.diginamic.hello.services.VilleService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +42,7 @@ import org.springframework.data.domain.Sort;
  */
 @RestController
 @RequestMapping("/villes")
+@Tag(name = "VilleController", description = "Controller for managing cities. Provides endpoints for CRUD operations and more specific city queries.")
 public class VilleControleur {
 
 	@Autowired
@@ -51,6 +60,10 @@ public class VilleControleur {
 	 * @param size The number of records per page (default 100).
 	 * @return A ResponseEntity containing a page of cities.
 	 */
+
+	@Operation(summary = "Get a paginated list of cities")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved list", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))) })
 	@GetMapping
 	public ResponseEntity<Page<Ville>> getVilles(@RequestParam(value = "page", defaultValue = "0") int page,
 			@RequestParam(value = "size", defaultValue = "100") int size) {
@@ -66,6 +79,11 @@ public class VilleControleur {
 	 * @return A ResponseEntity containing the city if found, or a NOT_FOUND status
 	 *         if not found.
 	 */
+
+	@Operation(summary = "Get a city by ID")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "City found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Ville.class))),
+			@ApiResponse(responseCode = "404", description = "City not found") })
 	@GetMapping(path = "/{id}")
 	public ResponseEntity<?> getVille(@PathVariable int id) {
 		Ville ville = villeService.extractVille(id);
@@ -80,6 +98,11 @@ public class VilleControleur {
 	 * @param result Contains any validation errors.
 	 * @return A ResponseEntity with the created city or validation errors if any.
 	 */
+
+	@Operation(summary = "Create a new city")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201", description = "City created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Ville.class))),
+			@ApiResponse(responseCode = "400", description = "Validation error") })
 	@PostMapping
 	public ResponseEntity<?> insertVille(@Valid @RequestBody Ville body, BindingResult result) {
 		if (result.hasErrors()) {
@@ -99,6 +122,11 @@ public class VilleControleur {
 	 * @return A ResponseEntity containing the updated city or a NOT_FOUND status if
 	 *         the city is not found.
 	 */
+
+	@Operation(summary = "Update an existing city")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "City updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Ville.class))),
+			@ApiResponse(responseCode = "404", description = "City not found") })
 	@PutMapping(path = "/{id}")
 	public ResponseEntity<?> updateVille(@Valid @RequestBody Ville body, @PathVariable int id, BindingResult result) {
 
@@ -118,6 +146,10 @@ public class VilleControleur {
 	 * @return A ResponseEntity with NO_CONTENT status if the city was successfully
 	 *         deleted or NOT_FOUND if the city is not found.
 	 */
+
+	@Operation(summary = "Delete a city by ID")
+	@ApiResponses(value = { @ApiResponse(responseCode = "204", description = "City deleted successfully"),
+			@ApiResponse(responseCode = "404", description = "City not found") })
 	@DeleteMapping(path = "/{id}")
 	public ResponseEntity<?> deleteVille(@PathVariable int id) {
 		villeService.supprimerVille(id);
@@ -132,6 +164,11 @@ public class VilleControleur {
 	 * @return A ResponseEntity containing a list of cities if found, or NOT_FOUND
 	 *         if the department is not found.
 	 */
+
+	@Operation(summary = "Retrieve the top N most populated cities in a specified department")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved top cities", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Ville.class))),
+			@ApiResponse(responseCode = "404", description = "Department not found") })
 	@GetMapping("/departement/{departementId}/top-villes")
 	public ResponseEntity<?> getTopNVillesByDepartement(@PathVariable int departementId,
 			@RequestParam(name = "maxResults", defaultValue = "5") int maxResults) {
@@ -149,6 +186,11 @@ public class VilleControleur {
 	 * @return A ResponseEntity containing a list of cities if any match the
 	 *         criteria, or NOT_FOUND if none found.
 	 */
+
+	@Operation(summary = "Retrieve cities within a specific population range in a specified department")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Cities found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class))),
+			@ApiResponse(responseCode = "404", description = "Department not found") })
 	@GetMapping("/departement/{departementId}/population")
 	public ResponseEntity<?> getVillesByPopulationAndDepartement(
 			@RequestParam(name = "minPopulation") int minPopulation,
@@ -166,6 +208,9 @@ public class VilleControleur {
 	 * @param prefix The prefix to match city names against.
 	 * @return A list of Ville objects or an empty list if none found.
 	 */
+
+	@Operation(summary = "Get a list of cities where the name starts with a specified prefix")
+	@ApiResponse(responseCode = "200", description = "Cities retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))
 	@GetMapping("/search")
 	public ResponseEntity<List<Ville>> getVillesByNomStartingWith(@RequestParam String prefix) {
 		List<Ville> villes = villeService.findByNomStartingWith(prefix);
@@ -178,6 +223,9 @@ public class VilleControleur {
 	 * @param minPopulation the minimum population threshold
 	 * @return a filtered list of cities
 	 */
+
+	@Operation(summary = "Retrieve all cities with a population greater than a specified minimum")
+	@ApiResponse(responseCode = "200", description = "Cities retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))
 	@GetMapping("/search/by-min-population")
 	public ResponseEntity<List<Ville>> getVillesByMinPopulation(@RequestParam int minPopulation) {
 		List<Ville> villes = villeService.findByNbHabitantsGreaterThan(minPopulation);
@@ -192,6 +240,9 @@ public class VilleControleur {
 	 * @param maxPopulation the maximum population threshold
 	 * @return a filtered list of cities
 	 */
+
+	@Operation(summary = "Retrieve all cities with a population between specified minimum and maximum limits")
+	@ApiResponse(responseCode = "200", description = "Cities retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))
 	@GetMapping("/search/by-population-range")
 	public ResponseEntity<?> getVillesByPopulationRange(@RequestParam long minPopulation,
 			@RequestParam long maxPopulation) {
@@ -207,6 +258,11 @@ public class VilleControleur {
 	 * @return a filtered list of cities, or a 404 response if the department is not
 	 *         found
 	 */
+
+	@Operation(summary = "Retrieve all cities in a given department where the population is greater than a specified minimum")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Cities retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class))),
+			@ApiResponse(responseCode = "404", description = "Department not found") })
 	@GetMapping("/search/by-departement-and-min-population")
 	public ResponseEntity<List<Ville>> getVillesByDepartementAndMinPopulation(@RequestParam String departementCode,
 			@RequestParam int minPopulation) {
@@ -225,6 +281,11 @@ public class VilleControleur {
 	 * @return a filtered list of cities, or a 404 response if the department is not
 	 *         found
 	 */
+
+	@Operation(summary = "Retrieve all cities in a given department where the population is between specified minimum and maximum limits")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Cities retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class))),
+			@ApiResponse(responseCode = "404", description = "Department not found") })
 	@GetMapping("/search/by-departement-and-population-range")
 	public ResponseEntity<List<Ville>> getVillesByDepartementAndPopulationRange(@RequestParam String departementCode,
 			@RequestParam int minPopulation, @RequestParam int maxPopulation) {
@@ -242,6 +303,9 @@ public class VilleControleur {
 	 * @param n               the number of cities to return
 	 * @return a list of the most populated cities
 	 */
+
+	@Operation(summary = "Retrieves the top n most populated cities in a given department")
+	@ApiResponse(responseCode = "200", description = "Successfully retrieved the top populated cities", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Ville.class)))
 	@GetMapping("/search/top-n-by-departement")
 	public ResponseEntity<List<Ville>> getTopNVillesByDepartement(@RequestParam String departementCode,
 			@RequestParam int n) {

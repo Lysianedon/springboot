@@ -2,6 +2,13 @@ package fr.diginamic.hello.controleurs;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.AccessException;
 import org.springframework.http.HttpStatus;
@@ -23,6 +30,8 @@ import fr.diginamic.hello.services.DepartementService;
  * REST controller for managing departments. This controller handles the HTTP
  * requests for creating, retrieving, updating, and deleting departments.
  */
+
+@Tag(name = "DepartementController", description = "REST controller for managing departments. This controller handles the HTTP requests for creating, retrieving, updating, and deleting departments.")
 @RestController
 @RequestMapping("/departements")
 public class DepartementControleur {
@@ -35,6 +44,9 @@ public class DepartementControleur {
 	 *
 	 * @return A ResponseEntity containing a list of all departments.
 	 */
+
+	@Operation(summary = "Retrieves all departments")
+	@ApiResponse(responseCode = "200", description = "Successfully retrieved all departments", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Departement.class)))
 	@GetMapping
 	public ResponseEntity<?> getDepartements() {
 		List<Departement> departements = depService.extractDepartements();
@@ -48,6 +60,11 @@ public class DepartementControleur {
 	 * @return A ResponseEntity containing the requested department if found, or a
 	 *         NOT_FOUND status if not found.
 	 */
+
+	@Operation(summary = "Retrieves a single department by its ID")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Department found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Departement.class))),
+			@ApiResponse(responseCode = "404", description = "Department not found") })
 	@GetMapping(path = "/{id}")
 	public ResponseEntity<?> getDepartement(@PathVariable int id) {
 		Departement departement = depService.extractDepartement(id);
@@ -63,6 +80,11 @@ public class DepartementControleur {
 	 *         or throws an AccessException if validation fails.
 	 * @throws AccessException if validation errors occur.
 	 */
+
+	@Operation(summary = "Creates a new department")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201", description = "Department created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Departement.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid department data provided") })
 	@PostMapping
 	public ResponseEntity<?> createDepartement(@RequestBody Departement body, BindingResult result)
 			throws AccessException {
@@ -83,6 +105,11 @@ public class DepartementControleur {
 	 * @return A ResponseEntity with the updated department if found, or a NOT_FOUND
 	 *         status if not found.
 	 */
+
+	@Operation(summary = "Updates an existing department by its ID")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Department updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Departement.class))),
+			@ApiResponse(responseCode = "404", description = "Department not found") })
 	@PutMapping(path = "/{id}")
 	public ResponseEntity<?> updateDepartement(@RequestBody Departement body, @PathVariable int id) {
 
@@ -97,7 +124,10 @@ public class DepartementControleur {
 	 * @return A ResponseEntity with HTTP status NO_CONTENT if deleted successfully,
 	 *         or NOT_FOUND if the department is not found.
 	 */
-	@DeleteMapping(path = "/{id}")
+
+	@Operation(summary = "Deletes a department by its ID")
+	@ApiResponse(responseCode = "204", description = "Department deleted successfully")
+	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteDepartement(@PathVariable int id) {
 
 		depService.deleteDepartement(id);

@@ -1,6 +1,14 @@
 package fr.diginamic.hello.controleurs;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -18,6 +26,8 @@ import java.util.stream.Collectors;
  * REST controller for managing regions. This controller handles the HTTP
  * requests for creating, retrieving, updating, and deleting regions.
  */
+
+@Tag(name = "RegionController", description = "REST controller for managing regions. This controller handles the HTTP requests for creating, retrieving, updating, and deleting regions.")
 @RestController
 @RequestMapping("/regions")
 public class RegionControleur {
@@ -31,6 +41,11 @@ public class RegionControleur {
 	 * @return A ResponseEntity containing a list of all regions or NO_CONTENT if
 	 *         there are no regions.
 	 */
+
+	@Operation(summary = "Retrieve all regions")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Regions found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Region.class))),
+			@ApiResponse(responseCode = "204", description = "No regions found") })
 	@GetMapping
 	public ResponseEntity<List<Region>> getAllRegions() {
 		List<Region> regions = regionService.getAllRegions();
@@ -47,6 +62,11 @@ public class RegionControleur {
 	 * @return A ResponseEntity containing the requested region if found, or
 	 *         NOT_FOUND if no such region exists.
 	 */
+
+	@Operation(summary = "Retrieve a single region by ID")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Region found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Region.class))),
+			@ApiResponse(responseCode = "404", description = "Region not found") })
 	@GetMapping("/{id}")
 	public ResponseEntity<Region> getRegionById(@PathVariable("id") long id) {
 		Optional<Region> regionData = regionService.getRegionById(id);
@@ -66,6 +86,11 @@ public class RegionControleur {
 	 * @return A ResponseEntity with the created region and HTTP status CREATED if
 	 *         successful, or CONFLICT if there's an IllegalArgumentException.
 	 */
+
+	@Operation(summary = "Create a new region")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201", description = "Region created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Region.class))),
+			@ApiResponse(responseCode = "409", description = "Conflict: region could not be created") })
 	@PostMapping
 	public ResponseEntity<?> createRegion(@Validated @RequestBody Region region, BindingResult result) {
 		if (result.hasErrors()) {
@@ -89,6 +114,11 @@ public class RegionControleur {
 	 * @return A ResponseEntity with the updated region if successful, or
 	 *         BAD_REQUEST if validation fails.
 	 */
+
+	@Operation(summary = "Update an existing region by ID")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Region updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Region.class))),
+			@ApiResponse(responseCode = "400", description = "Bad request: validation failed") })
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateRegion(@PathVariable("id") long id, @Validated @RequestBody Region region,
 			BindingResult result) {
@@ -112,6 +142,8 @@ public class RegionControleur {
 	 *         or NOT_FOUND if the region does not exist.
 	 */
 
+	@Operation(summary = "Delete a region by ID")
+	@ApiResponse(responseCode = "204", description = "Region deleted successfully")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<HttpStatus> deleteRegion(@PathVariable("id") long id) {
 		try {
@@ -129,6 +161,8 @@ public class RegionControleur {
 	 *         deleted successfully, or INTERNAL_SERVER_ERROR if an error occurs.
 	 */
 
+	@Operation(summary = "Delete all regions")
+	@ApiResponse(responseCode = "204", description = "All regions deleted successfully")
 	@DeleteMapping
 	public ResponseEntity<HttpStatus> deleteAllRegions() {
 		try {
