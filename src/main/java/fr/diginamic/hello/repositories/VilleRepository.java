@@ -1,5 +1,6 @@
 package fr.diginamic.hello.repositories;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -122,5 +123,9 @@ public interface VilleRepository extends JpaRepository<Ville, Integer> {
 	 *         department.
 	 */
 	List<Ville> findTopNVillesByDepartementOrderByNbHabitantsDesc(Departement departement, Pageable pageable);
+
+	Page<Ville> findByOrderByNbHabitantsDesc(Pageable pageable);
+
+	List<Ville> findByDepartement(Departement departement);
 
 }
